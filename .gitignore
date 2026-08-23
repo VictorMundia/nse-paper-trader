@@ -1,0 +1,11 @@
+# Ignore environment variable files that can contain secrets
+.env
+
+# Ignore Python virtual environment folder
+.venv/
+
+# Ignore Python bytecode cache folder
+__pycache__/
+
+# Ignore Node modules folder for frontend dependencies
+node_modules/
