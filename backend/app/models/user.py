@@ -22,3 +22,15 @@ class User(db.Model):
     experience_level = db.Column(db.String(20), nullable=True)
     # This stores the UTC timestamp for when the user was created.
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+        # This creates a one-to-many relationship from a user to their orders.
+    orders = db.relationship("Order", backref="user", lazy=True)
+    # This creates a one-to-many relationship from a user to their executed trades.
+    trades = db.relationship("Trade", backref="user", lazy=True)
+    # This creates a one-to-many relationship from a user to their portfolio position rows.
+    portfolios = db.relationship("Portfolio", backref="user", lazy=True)
+    # This creates a one-to-many relationship from a user to their watchlists.
+    watchlists = db.relationship("Watchlist", backref="user", lazy=True)
+    # This creates a one-to-one style relationship from a user to their optional profile row.
+    profile = db.relationship("UserProfile", backref="user", uselist=False, lazy=True)
+    # This creates a one-to-many relationship from a user to role assignments in the junction table.
+    role_assignments = db.relationship("UserRole", backref="user", lazy=True)

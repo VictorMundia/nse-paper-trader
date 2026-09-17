@@ -1,5 +1,5 @@
 # This imports Flask so we can create a backend application instance.
-from flask import Flask
+from flask import Flask  # type: ignore[import-not-found]
 
 # This imports centralized configuration settings for the app.
 from app.config.settings import Config

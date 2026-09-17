@@ -1,29 +1,29 @@
-# This imports datetime so we can store trade execution time.
+# This imports datetime so we can set default timestamps.
 from datetime import datetime
-# This imports the shared SQLAlchemy database object.
+# This imports the shared SQLAlchemy object.
 from app.extensions import db
 
 # This class defines the trades table structure.
 class Trade(db.Model):
-    # This sets the table name in PostgreSQL.
+    # This sets the exact database table name.
     __tablename__ = "trades"
-    # This creates the primary key for each trade.
+    # This creates the primary key column.
     id = db.Column(db.Integer, primary_key=True)
-    # This links the trade to a user.
+    # This links this trade to a user.
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    # This links the trade to a stock.
+    # This links this trade to a stock.
     stock_id = db.Column(db.Integer, db.ForeignKey("stocks.id"), nullable=False)
-    # This optionally links the trade to an originating order.
+    # This links this trade to an order if it came from one.
     order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=True)
     # This stores trade type such as BUY or SELL.
     trade_type = db.Column(db.String(10), nullable=False)
-    # This stores number of shares executed.
+    # This stores executed quantity.
     quantity = db.Column(db.Integer, nullable=False)
-    # This stores execution price per share.
+    # This stores executed unit price.
     price_at_trade = db.Column(db.Numeric(12, 2), nullable=False)
     # This stores total trade value.
     total_value = db.Column(db.Numeric(14, 2), nullable=False)
     # This stores realized profit or loss when applicable.
     realized_pnl = db.Column(db.Numeric(14, 2), nullable=True)
-    # This stores when the trade was executed.
+    # This stores execution timestamp.
     traded_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
