@@ -1,19 +1,19 @@
-# This imports Flask so we can create our backend web application instance.
-from flask import Flask  # type: ignore[import-not-found]
+# This imports Flask so we can create a backend application instance.
+from flask import Flask
 
-# This imports the Config class so the app can load settings like database URL and JWT secret.
+# This imports centralized configuration settings for the app.
 from app.config.settings import Config
 
-# This imports the shared SQLAlchemy object that will connect models to the Flask app.
+# This imports the shared SQLAlchemy object used across all models.
 from app.extensions import db
 
-# This defines a function that creates and configures a Flask app instance.
+# This defines a factory function that builds and configures the Flask app.
 def create_app():
-    # This creates the Flask app and uses __name__ so Flask can locate resources correctly.
+    # This creates the Flask application instance.
     app = Flask(__name__)
-    # This loads all configuration values from the Config class into the app.
+    # This loads configuration values into the Flask app.
     app.config.from_object(Config)
-    # This attaches the shared SQLAlchemy object to this app instance.
+    # This attaches SQLAlchemy to the Flask app instance.
     db.init_app(app)
-    # This returns the fully configured app so it can be used by the run/entry file.
+    # This returns the fully configured app instance.
     return app
