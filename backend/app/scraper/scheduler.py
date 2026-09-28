@@ -4,6 +4,9 @@ import atexit
 # This imports os so we can read the environment variable Flask's reloader sets.
 import os
 
+# This imports datetime and timedelta so we can measure how old the latest price is.
+from datetime import datetime, timedelta
+
 # This imports the scheduler that runs jobs on a background thread beside Flask.
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -13,19 +16,39 @@ from apscheduler.triggers.cron import CronTrigger
 # This imports the shared database object so we can undo a failed transaction.
 from app.extensions import db
 
+# This imports the Price model so we can check when prices were last saved.
+from app.models.price import Price
+
 # This imports the function that fetches and saves one round of prices.
 from app.scraper.nse_scraper import run_full_scrape_once
 
 # This is the NSE's local timezone (EAT, UTC+3), so the schedule ignores the laptop's clock settings.
 NSE_TIMEZONE = "Africa/Nairobi"
 
+# The startup scrape is skipped if prices are newer than this, so debug reloads do not save duplicates.
+STARTUP_FRESHNESS_WINDOW = timedelta(minutes=30)
 
-def run_scrape_job(app):
+
+def prices_are_fresh():
+    """Return True if the newest saved price is younger than STARTUP_FRESHNESS_WINDOW."""
+    # This finds the newest recorded_at across all prices (None if the table is empty).
+    newest = db.session.query(db.func.max(Price.recorded_at)).scalar()
+    # recorded_at is stored in UTC, so we compare it with the current UTC time.
+    return newest is not None and datetime.utcnow() - newest < STARTUP_FRESHNESS_WINDOW
+
+
+def run_scrape_job(app, skip_if_fresh=False):
     """Run one scrape inside the Flask app context and never let an error escape."""
     # This gives the background thread access to the database configuration.
     with app.app_context():
         # This protects the scheduler from crashing if one scrape fails.
         try:
+            # This lets the startup job skip itself when prices were saved recently.
+            if skip_if_fresh and prices_are_fresh():
+                # This explains the skip in the server console.
+                print("[Scheduler] Startup scrape skipped: prices are less than 30 minutes old.")
+                # This ends the job without scraping.
+                return
             # This fetches prices (live or fallback) and saves them.
             summary = run_full_scrape_once()
             # This prints a one-line result in the server console.
@@ -56,6 +79,8 @@ def start_scheduler(app, debug=False):
         trigger="date",
         # This passes the Flask app into run_scrape_job.
         args=[app],
+        # This tells the startup job to skip itself if prices are already fresh.
+        kwargs={"skip_if_fresh": True},
         # This names the job so it is easy to spot in logs.
         id="nse_startup_scrape",
     )

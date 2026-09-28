@@ -7,6 +7,8 @@ from app.extensions import db
 class Price(db.Model):
     # This sets the exact database table name.
     __tablename__ = "prices"
+    # This index makes "latest price for a stock" and "price history for a stock" fast lookups.
+    __table_args__ = (db.Index("ix_prices_stock_id_recorded_at", "stock_id", "recorded_at"),)
     # This creates the primary key column.
     id = db.Column(db.Integer, primary_key=True)
     # This links this price row to a stock.

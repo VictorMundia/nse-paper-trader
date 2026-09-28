@@ -13,6 +13,15 @@ from app.extensions import db, bcrypt, jwt
 # This imports the auth blueprint so we can register authentication routes.
 from app.routes.auth import auth_bp
 
+# This imports the portfolio blueprint for /api/portfolio.
+from app.routes.portfolio import portfolio_bp
+
+# This imports the stocks blueprint for /api/stocks.
+from app.routes.stocks import stocks_bp
+
+# This imports the trades blueprint for /api/trades.
+from app.routes.trades import trades_bp
+
 # These are the only websites allowed to call the API; Vite may open either address.
 ALLOWED_FRONTEND_ORIGINS = [
     # The Vite dev server when opened as localhost.
@@ -39,5 +48,11 @@ def create_app():
     from app import models
     # This registers the authentication blueprint so /api/auth routes are reachable.
     app.register_blueprint(auth_bp)
+    # This makes /api/stocks routes reachable.
+    app.register_blueprint(stocks_bp)
+    # This makes /api/trades routes reachable.
+    app.register_blueprint(trades_bp)
+    # This makes /api/portfolio reachable.
+    app.register_blueprint(portfolio_bp)
     # This returns the fully configured app instance.
     return app
