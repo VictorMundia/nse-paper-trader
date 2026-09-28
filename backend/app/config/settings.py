@@ -1,6 +1,9 @@
 # This imports the os module so we can read environment variables.
 import os
 
+# This imports timedelta so we can express the token lifetime as a length of time.
+from datetime import timedelta
+
 # This imports load_dotenv so values from a .env file can be loaded into environment variables.
 from dotenv import load_dotenv
 
@@ -15,5 +18,7 @@ class Config:
  SQLALCHEMY_TRACK_MODIFICATIONS = False
  # This reads the JWT secret key from environment variables for token signing.
  JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+ # This keeps students logged in for a study day instead of the library default of 15 minutes.
+ JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=8)
  # This sets the default virtual balance for new users in Kenyan Shillings.
  STARTING_VIRTUAL_BALANCE = 100000
