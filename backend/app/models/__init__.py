@@ -24,3 +24,5 @@ from app.models.userrole import UserRole
 from app.models.news import News
 # This imports the SentimentAnalysis model so SQLAlchemy can register the sentiment_analysis table.
 from app.models.sentimentanalysis import SentimentAnalysis
+# This imports the PasswordResetToken model so SQLAlchemy can register the password_reset_tokens table.
+from app.models.passwordresettoken import PasswordResetToken

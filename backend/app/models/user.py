@@ -22,6 +22,10 @@ class User(db.Model):
     experience_level = db.Column(db.String(20), nullable=True)
     # This stores the UTC timestamp for when the user was created.
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    # This stores when the password last changed; login tokens issued before this time are rejected.
+    password_changed_at = db.Column(db.DateTime, nullable=True)
+    # This links a user to their password reset tokens and deletes them together with the user.
+    reset_tokens = db.relationship("PasswordResetToken", backref="user", lazy=True, cascade="all, delete-orphan")
         # This creates a one-to-many relationship from a user to their orders.
     orders = db.relationship("Order", backref="user", lazy=True)
     # This creates a one-to-many relationship from a user to their executed trades.

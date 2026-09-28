@@ -94,7 +94,13 @@ export default function LoginPage() {
         </label>
         {/* This is the password field. */}
         <label className="block text-sm font-medium">
-          Password
+          {/* This row puts the label on the left and the "Forgot password?" link on the right. */}
+          <span className="flex items-center justify-between">
+            Password
+            <Link to="/forgot-password" className="text-xs font-medium text-emerald-700 hover:underline">
+              Forgot password?
+            </Link>
+          </span>
           <input
             // type="password" hides the characters.
             type="password"

@@ -1,5 +1,5 @@
 // This imports the icons used in the navigation bar.
-import { BarChart3, Briefcase, History, LayoutDashboard, LogOut, TrendingUp } from "lucide-react";
+import { BarChart3, Briefcase, History, LayoutDashboard, LogOut, TrendingUp, UserRound } from "lucide-react";
 // This imports NavLink, a link that knows whether it points at the current page.
 import { NavLink, useNavigate } from "react-router-dom";
 // This imports toast for the "logged out" message.
@@ -19,6 +19,8 @@ const NAV_ITEMS = [
   { to: "/portfolio", label: "Portfolio", icon: Briefcase },
   // Every buy and sell the student has made.
   { to: "/history", label: "History", icon: History },
+  // Profile details and change password.
+  { to: "/account", label: "Account", icon: UserRound },
 ];
 
 // This builds the Tailwind classes for a nav link, highlighting the current page.

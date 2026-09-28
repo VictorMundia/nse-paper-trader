@@ -2,6 +2,12 @@
 import { Route, Routes } from "react-router-dom";
 // This imports the frame (navbar + content) for logged-in pages.
 import Layout from "./components/Layout";
+// This imports the account page with change password.
+import AccountPage from "./pages/AccountPage";
+// This imports the "forgot password" page.
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+// This imports the page opened from the reset email.
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 // This imports the "coming soon" page used for sections later phases build.
 import PlaceholderPage from "./components/PlaceholderPage";
 // This imports the guard that requires login.
@@ -28,7 +34,11 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         {/* The registration page. */}
         <Route path="/register" element={<RegisterPage />} />
+        {/* The "forgot password" page. */}
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Route>
+      {/* The reset page is outside both guards so the email link works whether or not someone is logged in. */}
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       {/* These pages require login and share the navbar layout. */}
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
@@ -40,6 +50,8 @@ export default function App() {
           <Route path="/portfolio" element={<PlaceholderPage title="Portfolio" description="Your holdings, their current value, and your profit or loss." phase={7} />} />
           {/* The trade history page, built in Phase 7. */}
           <Route path="/history" element={<PlaceholderPage title="Trade history" description="Every buy and sell you have made, newest first." phase={7} />} />
+          {/* The account page with change password. */}
+          <Route path="/account" element={<AccountPage />} />
         </Route>
       </Route>
       {/* "*" matches any address not listed above. */}

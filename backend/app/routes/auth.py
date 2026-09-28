@@ -16,6 +16,8 @@ from app.extensions import db
 from app.extensions import bcrypt
 # This imports the User model so we can create and query user records.
 from app.models.user import User
+# This imports the password reset rules and the shared "save a new password" helper.
+from app.services.password_reset_service import ResetTokenError, request_password_reset, reset_password_with_token, set_new_password
 
 # This creates a blueprint named auth for all authentication endpoints.
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
@@ -49,6 +51,28 @@ def _get_text(data, key):
     # This treats numbers, lists, null, etc. as missing so the required-field check rejects them.
     return value.strip() if isinstance(value, str) else ""
 
+
+def _get_password(data, key):
+    """Return a password field exactly as typed (never trimmed), or "" if it is not text."""
+    # Spaces can be part of a password, so they are kept.
+    value = data.get(key)
+    # This treats non-text values as missing.
+    return value if isinstance(value, str) else ""
+
+
+def _password_rule_error(password):
+    """Return an error message if a new password breaks the rules, or None if it is acceptable."""
+    # This rejects passwords that are too short.
+    if len(password) < MIN_PASSWORD_LENGTH:
+        # This tells the user the minimum password length.
+        return f"Password must be at least {MIN_PASSWORD_LENGTH} characters."
+    # This measures in bytes because emoji and accented letters use more than one byte each.
+    if len(password.encode("utf-8")) > MAX_PASSWORD_BYTES:
+        # This tells the user the password is too long.
+        return f"Password must be at most {MAX_PASSWORD_BYTES} bytes long."
+    # This means the password is acceptable.
+    return None
+
 # This defines a POST route for user registration.
 @auth_bp.route("/register", methods=["POST"])
 def register():
@@ -78,14 +102,12 @@ def register():
     if len(email) > MAX_FIELD_LENGTH or not EMAIL_PATTERN.match(email):
         # This tells the user the email is not valid.
         return jsonify({"message": "Please enter a valid email address."}), 400
-    # This rejects passwords that are too short.
-    if len(password) < MIN_PASSWORD_LENGTH:
-        # This tells the user the minimum password length.
-        return jsonify({"message": f"Password must be at least {MIN_PASSWORD_LENGTH} characters."}), 400
-    # This measures in bytes because emoji and accented letters use more than one byte each.
-    if len(password.encode("utf-8")) > MAX_PASSWORD_BYTES:
-        # This tells the user the password is too long.
-        return jsonify({"message": f"Password must be at most {MAX_PASSWORD_BYTES} bytes long."}), 400
+    # This rejects passwords that break the length rules.
+    password_error = _password_rule_error(password)
+    # This returns the specific rule that was broken.
+    if password_error:
+        # This tells the user what to fix.
+        return jsonify({"message": password_error}), 400
     # This rejects a missing experience level or one that is not on the allowed list.
     if experience_level not in EXPERIENCE_LEVELS:
         # This tells the user which values are allowed.
@@ -190,3 +212,103 @@ def me():
             "created_at": user.created_at.isoformat(),
         }
     ), 200
+
+
+# This lets a logged-in student change their password by proving they know the current one.
+@auth_bp.route("/change-password", methods=["POST"])
+@jwt_required()
+def change_password():
+    # This reads the body, or None if it is not a JSON object.
+    data = _read_json_object()
+    # This rejects a missing or malformed body.
+    if data is None:
+        # This tells the caller what is expected.
+        return jsonify({"message": "Request body must be a JSON object."}), 400
+    # This reads the current password exactly as typed.
+    current_password = _get_password(data, "current_password")
+    # This reads the new password exactly as typed.
+    new_password = _get_password(data, "new_password")
+    # This requires both fields.
+    if not current_password or not new_password:
+        # This tells the user what is missing.
+        return jsonify({"message": "current_password and new_password are required."}), 400
+    # This loads the logged-in student.
+    user = db.session.get(User, int(get_jwt_identity()))
+    # This handles a valid token whose user was deleted.
+    if user is None:
+        # 404 because the account no longer exists.
+        return jsonify({"message": "User not found."}), 404
+    # 400, not 401: a 401 would make the frontend log the student out for a typo.
+    if not bcrypt.check_password_hash(user.password_hash, current_password):
+        # This tells the student the current password is wrong.
+        return jsonify({"message": "Current password is incorrect."}), 400
+    # This applies the same length rules as registration.
+    password_error = _password_rule_error(new_password)
+    # This returns the specific rule that was broken.
+    if password_error:
+        # This tells the user what to fix.
+        return jsonify({"message": password_error}), 400
+    # This stops "changing" to the same password.
+    if bcrypt.check_password_hash(user.password_hash, new_password):
+        # This asks for a different password.
+        return jsonify({"message": "New password must be different from your current password."}), 400
+    # This saves the new hash and invalidates every older login token, including on other devices.
+    set_new_password(user, new_password)
+    # This writes the change to PostgreSQL.
+    db.session.commit()
+    # This issues a fresh token so the student stays logged in on this device.
+    return jsonify({"message": "Password changed successfully.", "access_token": create_access_token(identity=str(user.id))}), 200
+
+
+# This starts the "forgot password" flow by emailing a reset link.
+@auth_bp.route("/forgot-password", methods=["POST"])
+def forgot_password():
+    # This reads the body, or None if it is not a JSON object.
+    data = _read_json_object()
+    # This rejects a missing or malformed body; that reveals nothing about any account.
+    if data is None:
+        # This tells the caller what is expected.
+        return jsonify({"message": "Request body must be a JSON object."}), 400
+    # This reads and normalises the email the same way registration does.
+    email = _get_text(data, "email").lower()
+    # This only looks up emails that could be valid.
+    if EMAIL_PATTERN.match(email):
+        # This emails a link if the account exists; it does nothing if it does not.
+        request_password_reset(email)
+    # This reply is identical whether or not the email is registered, so accounts cannot be discovered.
+    return jsonify({"message": "If that email is registered, a password reset link has been sent. It expires in 30 minutes."}), 200
+
+
+# This finishes the "forgot password" flow: it checks the link and saves the new password.
+@auth_bp.route("/reset-password", methods=["POST"])
+def reset_password():
+    # This reads the body, or None if it is not a JSON object.
+    data = _read_json_object()
+    # This rejects a missing or malformed body.
+    if data is None:
+        # This tells the caller what is expected.
+        return jsonify({"message": "Request body must be a JSON object."}), 400
+    # This reads the token from the reset link.
+    token = _get_text(data, "token")
+    # This reads the new password exactly as typed.
+    new_password = _get_password(data, "new_password")
+    # This requires both fields.
+    if not token or not new_password:
+        # This tells the user what is missing.
+        return jsonify({"message": "token and new_password are required."}), 400
+    # This applies the same length rules as registration.
+    password_error = _password_rule_error(new_password)
+    # This returns the specific rule that was broken.
+    if password_error:
+        # This tells the user what to fix.
+        return jsonify({"message": password_error}), 400
+    # This checks the link and saves the new password.
+    try:
+        # This is single-use and logs out every existing session.
+        reset_password_with_token(token, new_password)
+    # This handles an unknown, used, or expired link.
+    except ResetTokenError as error:
+        # This tells the student to request a new link.
+        return jsonify({"message": str(error)}), 400
+    # This confirms success.
+    return jsonify({"message": "Your password has been reset. You can now log in."}), 200
