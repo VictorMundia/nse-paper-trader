@@ -47,8 +47,8 @@ export default function AuthCard({ title, subtitle, children, footer }) {
             ))}
           </ul>
         </div>
-        {/* This is the project credit at the bottom. */}
-        <p className="text-sm text-emerald-200">BBIT Final Year Project · Strathmore University</p>
+        
+        <p className="text-sm text-emerald-200"></p>
       </aside>
 
       {/* This is the form column, centred vertically and horizontally. */}
