@@ -1,0 +1,5 @@
+# Ignore the production build output
+dist/
+
+# Ignore local environment overrides such as VITE_API_URL
+.env.local
