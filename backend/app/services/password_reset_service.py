@@ -43,8 +43,8 @@ def set_new_password(user, new_password):
     """Hash and save a new password, and mark every older login token as no longer valid."""
     # This stores only the bcrypt hash of the new password.
     user.password_hash = bcrypt.generate_password_hash(new_password).decode("utf-8")
-    # Rounded to the second because token issue times (iat) are whole seconds; see extensions.py.
-    user.password_changed_at = datetime.utcnow().replace(microsecond=0)
+    # This records the change; tokens issued for the previous password version stop working (see extensions.py).
+    user.password_changed_at = datetime.utcnow()
 
 
 def request_password_reset(email):

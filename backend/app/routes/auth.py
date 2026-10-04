@@ -12,6 +12,8 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 
 # This imports the shared database object for saving and querying users.
 from app.extensions import db
+# This imports the helpers that stamp tokens with the user's password version.
+from app.extensions import PASSWORD_VERSION_CLAIM, password_version
 # This imports the shared bcrypt object for secure password hashing and verification.
 from app.extensions import bcrypt
 # This imports the User model so we can create and query user records.
@@ -58,6 +60,12 @@ def _get_password(data, key):
     value = data.get(key)
     # This treats non-text values as missing.
     return value if isinstance(value, str) else ""
+
+
+def _issue_token(user):
+    """Create a login token tied to the user's current password, so a password change invalidates it."""
+    # The user ID is the token's identity; the extra claim records the password version.
+    return create_access_token(identity=str(user.id), additional_claims={PASSWORD_VERSION_CLAIM: password_version(user)})
 
 
 def _password_rule_error(password):
@@ -171,7 +179,7 @@ def login():
         # This returns a generic error so attackers cannot learn which field was wrong.
         return jsonify({"message": "Invalid email or password."}), 401
     # This generates a JWT access token whose identity is the user ID.
-    access_token = create_access_token(identity=str(user.id))
+    access_token = _issue_token(user)
     # This returns login success details and the token to the frontend.
     return jsonify(
         {
@@ -257,7 +265,7 @@ def change_password():
     # This writes the change to PostgreSQL.
     db.session.commit()
     # This issues a fresh token so the student stays logged in on this device.
-    return jsonify({"message": "Password changed successfully.", "access_token": create_access_token(identity=str(user.id))}), 200
+    return jsonify({"message": "Password changed successfully.", "access_token": _issue_token(user)}), 200
 
 
 # This starts the "forgot password" flow by emailing a reset link.

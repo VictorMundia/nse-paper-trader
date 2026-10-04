@@ -36,12 +36,27 @@ ALLOWED_FRONTEND_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
 
+# These settings must be present in .env, or the app cannot work safely.
+REQUIRED_SETTINGS = ("SQLALCHEMY_DATABASE_URI", "JWT_SECRET_KEY")
+
 # This defines a factory function that builds and configures the Flask app.
-def create_app():
+def create_app(config_overrides=None):
     # This creates the Flask application instance.
     app = Flask(__name__)
     # This loads configuration values into the Flask app.
     app.config.from_object(Config)
+    # Tests pass overrides here, e.g. a separate test database, so real data is never touched.
+    if config_overrides:
+        # This replaces the matching settings.
+        app.config.update(config_overrides)
+    # This lists any required setting that is missing or empty.
+    missing = [key for key in REQUIRED_SETTINGS if not app.config.get(key)]
+    # Failing at startup with a clear message beats failing later with a confusing error.
+    if missing:
+        # SQLALCHEMY_DATABASE_URI comes from DATABASE_URL in .env, so the message names the .env key.
+        names = ["DATABASE_URL" if key == "SQLALCHEMY_DATABASE_URI" else key for key in missing]
+        # This stops the app from starting.
+        raise RuntimeError(f"Missing required setting(s) in backend/.env: {', '.join(names)}")
     # This attaches SQLAlchemy to the Flask app instance.
     db.init_app(app)
     # This attaches Bcrypt to the Flask app instance for password hashing.
