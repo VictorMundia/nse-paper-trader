@@ -25,6 +25,9 @@ from app.routes.trades import trades_bp
 # This imports the watchlist blueprint for /api/watchlist.
 from app.routes.watchlist import watchlist_bp
 
+# This imports the leaderboard blueprint for /api/leaderboard.
+from app.routes.leaderboard import leaderboard_bp
+
 # These are the only websites allowed to call the API; Vite may open either address.
 ALLOWED_FRONTEND_ORIGINS = [
     # The Vite dev server when opened as localhost.
@@ -59,5 +62,7 @@ def create_app():
     app.register_blueprint(portfolio_bp)
     # This makes /api/watchlist routes reachable.
     app.register_blueprint(watchlist_bp)
+    # This makes /api/leaderboard reachable.
+    app.register_blueprint(leaderboard_bp)
     # This returns the fully configured app instance.
     return app

@@ -14,6 +14,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
 // This imports the dashboard page.
 import DashboardPage from "./pages/DashboardPage";
+// This imports the leaderboard page.
+import LeaderboardPage from "./pages/LeaderboardPage";
+// This imports the lessons page.
+import LearnPage from "./pages/LearnPage";
 // This imports the login page.
 import LoginPage from "./pages/LoginPage";
 // This imports the 404 page.
@@ -58,6 +62,10 @@ export default function App() {
           <Route path="/portfolio" element={<PortfolioPage />} />
           {/* The trade history page. */}
           <Route path="/history" element={<TradeHistoryPage />} />
+          {/* The leaderboard. */}
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          {/* The lessons, quiz, and glossary. */}
+          <Route path="/learn" element={<LearnPage />} />
           {/* The account page with change password. */}
           <Route path="/account" element={<AccountPage />} />
         </Route>
