@@ -82,7 +82,9 @@ export default function PriceChart({ ticker, companyName }) {
           {/* This is the latest price and the change across the range. */}
           <p className="mt-1 text-2xl font-semibold">
             {formatKES(last)}{" "}
-            <span className={`text-sm font-medium ${changeColor(rangeChange)}`}>{formatPercent(rangeChange)}</span>
+            <span className={`text-sm font-medium ${changeColor(rangeChange)}`}>{formatPercent(rangeChange)}</span>{" "}
+            {/* This labels the change so it is not confused with the "since last update" change elsewhere. */}
+            <span className="text-xs font-normal text-slate-400">over {RANGES.find((range) => range.days === days).label}</span>
           </p>
         </div>
         {/* These are the range buttons. */}

@@ -142,8 +142,16 @@ export default function DashboardPage() {
         {/* The chart takes 3 of 5 columns. */}
         <div className="lg:col-span-3">
           {selectedStock && <PriceChart ticker={selectedStock.ticker} companyName={selectedStock.company_name} />}
-          {/* This hint explains the table is clickable. */}
-          <p className="mt-2 text-xs text-slate-500">Tip: click any stock in the market table to see its chart.</p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+            {/* This hint explains the table is clickable. */}
+            <p className="text-slate-500">Tip: click any stock in the market table to see its chart.</p>
+            {/* This opens the selected stock's trade page. */}
+            {selectedStock && (
+              <Link to={`/stocks/${selectedStock.ticker}`} className="rounded-lg bg-emerald-600 px-3 py-1.5 font-medium text-white hover:bg-emerald-700">
+                Buy or sell {selectedStock.ticker}
+              </Link>
+            )}
+          </div>
         </div>
         {/* The table takes 2 of 5 columns and scrolls if long. */}
         <div className="lg:col-span-2 lg:max-h-[26rem] lg:overflow-y-auto">

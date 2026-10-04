@@ -33,7 +33,7 @@ class User(db.Model):
     # This creates a one-to-many relationship from a user to their portfolio position rows.
     portfolios = db.relationship("Portfolio", backref="user", lazy=True)
     # This creates a one-to-many relationship from a user to their watchlists.
-    watchlists = db.relationship("Watchlist", backref="user", lazy=True)
+    watchlists = db.relationship("Watchlist", backref="user", lazy=True, cascade="all, delete-orphan")
     # This creates a one-to-one style relationship from a user to their optional profile row.
     profile = db.relationship("UserProfile", backref="user", uselist=False, lazy=True)
     # This creates a one-to-many relationship from a user to role assignments in the junction table.

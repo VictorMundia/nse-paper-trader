@@ -8,8 +8,6 @@ import AccountPage from "./pages/AccountPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 // This imports the page opened from the reset email.
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-// This imports the "coming soon" page used for sections later phases build.
-import PlaceholderPage from "./components/PlaceholderPage";
 // This imports the guard that requires login.
 import ProtectedRoute from "./components/ProtectedRoute";
 // This imports the guard that hides login/register from logged-in students.
@@ -24,6 +22,10 @@ import NotFoundPage from "./pages/NotFoundPage";
 import PortfolioPage from "./pages/PortfolioPage";
 // This imports the registration page.
 import RegisterPage from "./pages/RegisterPage";
+// This imports the single-stock page with the trade panel.
+import StockDetailPage from "./pages/StockDetailPage";
+// This imports the list of all stocks.
+import StocksPage from "./pages/StocksPage";
 // This imports the trade history page.
 import TradeHistoryPage from "./pages/TradeHistoryPage";
 
@@ -48,8 +50,10 @@ export default function App() {
         <Route element={<Layout />}>
           {/* "index" means this is the page for "/" itself. */}
           <Route index element={<DashboardPage />} />
-          {/* The stock explorer, built in Phase 8. */}
-          <Route path="/stocks" element={<PlaceholderPage title="Stocks" description="Browse the 15 NSE stocks, view price charts, and buy or sell shares." phase={8} />} />
+          {/* The list of all stocks. */}
+          <Route path="/stocks" element={<StocksPage />} />
+          {/* ":ticker" is a URL parameter, e.g. /stocks/SCOM. */}
+          <Route path="/stocks/:ticker" element={<StockDetailPage />} />
           {/* The portfolio page. */}
           <Route path="/portfolio" element={<PortfolioPage />} />
           {/* The trade history page. */}
