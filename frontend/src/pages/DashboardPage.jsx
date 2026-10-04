@@ -10,6 +10,8 @@ import toast from "react-hot-toast";
 import MarketTable from "../components/MarketTable";
 import PriceChart from "../components/PriceChart";
 import StatCard from "../components/StatCard";
+// This imports the BUY/SELL badge.
+import TradeTypeBadge from "../components/TradeTypeBadge";
 // This imports the logged-in student's profile and the refresh action for the navbar balance.
 import { useAuth } from "../context/AuthContext";
 // This imports the shared API client and error helper.
@@ -209,9 +211,7 @@ export default function DashboardPage() {
                 <li key={trade.id} className="flex items-center justify-between px-5 py-3 text-sm">
                   {/* This is the BUY/SELL badge, ticker, and time. */}
                   <div className="flex items-center gap-3">
-                    <span className={`rounded px-2 py-0.5 text-xs font-semibold ${trade.trade_type === "BUY" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
-                      {trade.trade_type}
-                    </span>
+                    <TradeTypeBadge type={trade.trade_type} />
                     <div>
                       <p className="font-semibold">
                         {trade.quantity} {trade.ticker}

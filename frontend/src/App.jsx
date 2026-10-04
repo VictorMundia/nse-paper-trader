@@ -20,8 +20,12 @@ import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 // This imports the 404 page.
 import NotFoundPage from "./pages/NotFoundPage";
+// This imports the portfolio page.
+import PortfolioPage from "./pages/PortfolioPage";
 // This imports the registration page.
 import RegisterPage from "./pages/RegisterPage";
+// This imports the trade history page.
+import TradeHistoryPage from "./pages/TradeHistoryPage";
 
 // This is the map of every URL in the app.
 export default function App() {
@@ -46,10 +50,10 @@ export default function App() {
           <Route index element={<DashboardPage />} />
           {/* The stock explorer, built in Phase 8. */}
           <Route path="/stocks" element={<PlaceholderPage title="Stocks" description="Browse the 15 NSE stocks, view price charts, and buy or sell shares." phase={8} />} />
-          {/* The portfolio page, built in Phase 7. */}
-          <Route path="/portfolio" element={<PlaceholderPage title="Portfolio" description="Your holdings, their current value, and your profit or loss." phase={7} />} />
-          {/* The trade history page, built in Phase 7. */}
-          <Route path="/history" element={<PlaceholderPage title="Trade history" description="Every buy and sell you have made, newest first." phase={7} />} />
+          {/* The portfolio page. */}
+          <Route path="/portfolio" element={<PortfolioPage />} />
+          {/* The trade history page. */}
+          <Route path="/history" element={<TradeHistoryPage />} />
           {/* The account page with change password. */}
           <Route path="/account" element={<AccountPage />} />
         </Route>

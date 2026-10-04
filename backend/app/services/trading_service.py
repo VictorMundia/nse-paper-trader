@@ -295,11 +295,17 @@ def get_portfolio_summary(user_id):
     total_value = to_money(user.virtual_balance + holdings_value)
     # Overall return = how much the account has grown or shrunk since the start.
     total_return = total_value - starting_balance
+    # This adds up the profit or loss locked in by every sell (buys have no realised P&L).
+    realized_pnl = db.session.query(db.func.coalesce(db.func.sum(Trade.realized_pnl), 0)).filter(Trade.user_id == user.id).scalar()
     # This returns the whole summary.
     return {
         "cash_balance": str(user.virtual_balance),
         "holdings_value": str(to_money(holdings_value)),
         "holdings_cost": str(to_money(holdings_cost)),
+        # Paper profit/loss on shares still held.
+        "unrealized_pnl": str(to_money(holdings_value - holdings_cost)),
+        # Profit/loss already locked in by selling.
+        "realized_pnl": str(to_money(realized_pnl)),
         "total_value": str(total_value),
         "starting_balance": str(starting_balance),
         "total_return": str(total_return),
