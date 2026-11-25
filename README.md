@@ -53,6 +53,23 @@ Then open http://localhost:5173. The backend scrapes prices once at startup (unl
 
 Set `FLASK_DEBUG=1` in `backend/.env` for auto-reload during development. Keep it `0` when real participants use the app.
 
+## Free deployment (Neon + Render)
+
+The repo includes `render.yaml`, which creates the backend API and the frontend site on Render's free plan. The database is a free Neon PostgreSQL database.
+
+1. **Database:** sign up at https://neon.tech with GitHub, create a project, and copy its connection string (it starts with `postgresql://` and ends with `?sslmode=require`).
+2. **Blueprint:** sign up at https://render.com with GitHub, choose **New > Blueprint**, and select this repository. Render reads `render.yaml` and asks for three values:
+   - `DATABASE_URL`: the Neon connection string from step 1.
+   - `FRONTEND_URL`: `https://nse-paper-trader.onrender.com` (the frontend address; check the name Render gives the site).
+   - `VITE_API_URL`: `https://nse-paper-trader-api.onrender.com/api` (the backend address followed by `/api`).
+3. Click **Apply**. The backend creates the tables and scrapes prices on its first start; the frontend builds and goes live.
+4. If Render gives either service a different address, update `FRONTEND_URL` on the backend or `VITE_API_URL` on the frontend to match, then redeploy that service.
+
+Notes on the free plan:
+
+- The backend sleeps after 15 minutes without visitors; the first request afterwards takes about a minute. Prices are not scraped while it sleeps and refresh when it wakes.
+- Password reset emails only work if the `MAIL_*` settings are added to the backend; otherwise the email is printed in the Render logs.
+
 ## Running the tests
 
 ```powershell

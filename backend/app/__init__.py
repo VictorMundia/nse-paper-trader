@@ -64,7 +64,9 @@ def create_app(config_overrides=None):
     # This attaches JWT manager to the Flask app instance for token auth.
     jwt.init_app(app)
     # This allows only our frontend origins to call /api/* routes from the browser.
-    CORS(app, resources={r"/api/*": {"origins": ALLOWED_FRONTEND_ORIGINS}})
+    # This also allows the deployed frontend address set in FRONTEND_URL.
+    origins = list(dict.fromkeys(ALLOWED_FRONTEND_ORIGINS + [app.config["FRONTEND_URL"].rstrip("/")]))
+    CORS(app, resources={r"/api/*": {"origins": origins}})
     # This imports all model classes so SQLAlchemy knows table definitions without overriding the Flask app variable.
     from app import models
     # This registers the authentication blueprint so /api/auth routes are reachable.
