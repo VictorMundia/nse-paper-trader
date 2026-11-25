@@ -10,10 +10,19 @@ from dotenv import load_dotenv
 # This loads environment variables from the .env file into the process environment.
 load_dotenv()
 
+# This makes plain postgres:// or postgresql:// URLs (as given by Neon or Render) use the installed psycopg2 driver.
+def _database_url():
+ url = os.getenv("DATABASE_URL")
+ if url:
+  for prefix in ("postgres://", "postgresql://"):
+   if url.startswith(prefix):
+    return "postgresql+psycopg2://" + url[len(prefix):]
+ return url
+
 # This class stores all Flask configuration values in one place.
 class Config:
  # This reads the PostgreSQL database URL from the DATABASE_URL environment variable.
- SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+ SQLALCHEMY_DATABASE_URI = _database_url()
  # This disables SQLAlchemy event tracking to reduce unnecessary memory usage.
  SQLALCHEMY_TRACK_MODIFICATIONS = False
  # This reads the JWT secret key from environment variables for token signing.
